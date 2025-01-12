@@ -11,36 +11,62 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import com.example.calenderapp.ui.screens.CalenderScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.calenderapp.ui.screens.CalendarView
 import com.example.calenderapp.ui.screens.EventScreen
-import com.example.calenderapp.ui.theme.CalenderAppTheme
+import com.example.calenderapp.ui.screens.EventsListScreen
+import com.example.calenderapp.ui.viewmodels.CalenderScreenVM
+import com.example.calenderapp.ui.viewmodels.EventScreenVM
+import com.example.calenderapp.ui.viewmodels.MainScreenVM
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            CalenderAppTheme {
-                val isEventScreenAppear = remember { mutableStateOf(false) }
+                val mainScreenVM: MainScreenVM = viewModel()
+                val calenderScreenVM: CalenderScreenVM = viewModel()
+                val eventScreenVM: EventScreenVM = viewModel()
 
                 Scaffold(
                     floatingActionButton = {
-                        FloatingActionButton(onClick = { isEventScreenAppear.value = true }, containerColor = Color.DarkGray) {
+                        FloatingActionButton(onClick = {
+                            mainScreenVM.onEventScreenAppear()
+                        }) {
                             Icon(imageVector = Icons.Default.Add, contentDescription = "add")
                         }
                     },
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding->
-                    CalenderScreen(modifier = Modifier.padding(innerPadding))
-                    if(isEventScreenAppear.value){
-                        EventScreen { isEventScreenAppear.value = !isEventScreenAppear.value }
+                    if(!mainScreenVM.isEventListScreenAppear){
+                        CalendarView(
+                            modifier = Modifier.padding(innerPadding),
+                            mainScreenVM = mainScreenVM,
+                            eventScreenVM= eventScreenVM,
+                            calenderScreenVM = calenderScreenVM,
+                        )
                     }
+                    else if (mainScreenVM.isEventListScreenAppear){
+                        EventsListScreen(
+                            mainScreenVM = mainScreenVM,
+                            eventScreenVM= eventScreenVM,
+                            calenderScreenVM = calenderScreenVM,
+                            )
+                    }
+                    if (mainScreenVM.isEventScreenAppear) {
+                        EventScreen(
+                            mainScreenVM = mainScreenVM,
+                            eventScreenVM= eventScreenVM,
+                            calenderScreenVM = calenderScreenVM,
+                        )
+                    }
+
                 }
             }
-        }
+
     }
 }

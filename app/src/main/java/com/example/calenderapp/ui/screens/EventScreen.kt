@@ -87,7 +87,7 @@ fun EventScreen(
     ModalBottomSheet(
         onDismissRequest = {
             mainScreenVM.onEventScreenDisappear()
-            mainScreenVM.onEventListScreenDisappear()
+            mainScreenVM.onStopEdit()
             eventScreenVM.resetCurrentEvent()
         }
     ) {
@@ -108,7 +108,7 @@ fun EventScreen(
                 if (eventScreenVM.title_.value != "") {
                     TextButton(
                         onClick = {
-                            if(!mainScreenVM.isEventScreenAppear){
+                            if(!mainScreenVM.isEditGoingOn){
                                 calenderScreenVM.addEvent(EventItem(
                                     title = eventScreenVM.title_.value,
                                     desc = eventScreenVM.desc_.value,
@@ -127,9 +127,13 @@ fun EventScreen(
                                 ))
                                 eventScreenVM.resetCurrentEvent()
                                 Toast.makeText(mContext,"Event has been edited successfully", Toast.LENGTH_SHORT).show()
+                                mainScreenVM.onStopEdit()
                             }
                         },
                     ) {
+                        if(mainScreenVM.isEditGoingOn)
+                        Text("Edit")
+                        else
                         Text("Save")
                     }
                 }
@@ -197,7 +201,8 @@ fun EventScreen(
                 mMinute = LocalTime.now().minute
                 mSecond = LocalTime.now().second
             },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !mainScreenVM.isEditGoingOn
             ) {
                 Text(text = "Select Date : ${eventScreenVM.date}", modifier = Modifier.padding(12.dp))
             }

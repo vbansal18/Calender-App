@@ -1,6 +1,7 @@
 package com.example.calenderapp.ui.screens
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.calenderapp.data.ColorCategories
@@ -41,6 +43,7 @@ fun EventsListScreen(
     mainScreenVM: MainScreenVM,
     eventScreenVM: EventScreenVM
 ) {
+    val context = LocalContext.current
     val eventDayList = calenderScreenVM.eventListScreenList.collectAsState(emptyList()).value
     Log.d("EventListScreen", eventDayList.toString())
 
@@ -53,7 +56,7 @@ fun EventsListScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = {
-                mainScreenVM.onEventListScreenDisappear()
+                mainScreenVM.onStopEdit()
                 mainScreenVM.onEventScreenDisappear()
             }) {
                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = null)
@@ -88,6 +91,8 @@ fun EventsListScreen(
                     ) {
                         IconButton(onClick = {
                             calenderScreenVM.deleteEvent(event)
+                            mainScreenVM.onStopEdit()
+                            Toast.makeText(context, "Event deleted successfully", Toast.LENGTH_SHORT).show()
                         }){ Icon(
                             Icons.Default.Delete,
                             contentDescription = null,

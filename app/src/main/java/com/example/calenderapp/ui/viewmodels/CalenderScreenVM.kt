@@ -41,10 +41,10 @@ class CalenderScreenVM @Inject constructor(private val repository: EventsReposit
             }
         }
     }
-    fun setEventsListScreenEvents(eventList: List<EventItem>){
+    fun setEventsListScreenEvents(eventList: Flow<List<EventItem>>){
         viewModelScope.launch {
             try{
-                _eventListScreenList = flow{ emit(eventList) }
+                _eventListScreenList = eventList
             }
             catch (e:Exception){
                 Log.d("Error", e.message.toString())

@@ -19,7 +19,11 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,6 +37,11 @@ import com.example.calenderapp.ui.viewmodels.EventScreenVM
 import com.example.calenderapp.ui.viewmodels.MainScreenVM
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
@@ -43,7 +52,6 @@ import java.util.Locale
 fun CalendarView(modifier: Modifier = Modifier, calenderScreenVM: CalenderScreenVM, mainScreenVM: MainScreenVM, eventScreenVM: EventScreenVM) {
     val today = LocalDate.now()
     val pagerState = rememberPagerState(initialPage = 0)
-    val allEvents = calenderScreenVM.allEvents.collectAsState(emptyList()).value
 
     Column(modifier = Modifier.fillMaxSize()) {
         HorizontalPager(
@@ -58,7 +66,6 @@ fun CalendarView(modifier: Modifier = Modifier, calenderScreenVM: CalenderScreen
                 yearMonth = yearMonth,
                 today = today,
                 calenderScreenVM = calenderScreenVM,
-                events = allEvents,
                 mainScreenVM = mainScreenVM,
             )
         }
@@ -70,7 +77,6 @@ fun CalendarMonthView(
     yearMonth: YearMonth,
     today: LocalDate,
     calenderScreenVM: CalenderScreenVM,
-    events: List<EventItem>,
     mainScreenVM: MainScreenVM
 ) {
     val daysInMonth = yearMonth.lengthOfMonth()
@@ -80,9 +86,11 @@ fun CalendarMonthView(
     val tempMonth = if(yearMonth.month.value+1<10) "0" else ""
     val tempMonthPlus1 = if((yearMonth.month.value+2)%12<10) "0" else ""
     val tempYear = if(yearMonth.month.value==12) currentYear+1 else currentYear
-    val allEvents = events.filter { list->
-        list.timestamp >= "${yearMonth.year}$tempMonth${yearMonth.month.value}01000000".toLong() && list.timestamp < "${tempYear}$tempMonthPlus1${(yearMonth.month.value+1)%12}01000000".toLong()
-    }
+    val allEvents : State<List<EventItem>> = calenderScreenVM.allEvents.filter{item->
+        item.any {
+            it.timestamp >= "${yearMonth.year}$tempMonth${yearMonth.month.value}01000000".toLong() && it.timestamp < "${tempYear}$tempMonthPlus1${(yearMonth.month.value + 1) % 12}01000000".toLong()
+        }
+    }.collectAsState(emptyList())
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
             text = "$currentMonth $currentYear",
@@ -119,13 +127,9 @@ fun CalendarMonthView(
                             val tempDay = (if(day<10) "0" else "")
                             val tempDayEnd = (if(day<9 || (day+1)%(daysInMonth+1)==0) "0" else "")
                             val isToday = today.dayOfMonth == day && today.month == yearMonth.month && today.year == yearMonth.year
-                            val eventDayList = allEvents.filter { event->
-                                event.timestamp >= "${yearMonth.year}$tempMonth${yearMonth.month.value}$tempDay${day}000000".toLong() && event.timestamp < "${yearMonth.year}$tempMonth${yearMonth.month.value}$tempDayEnd${(day)%daysInMonth+1}000000".toLong()
+                            val eventDayList = allEvents.value.filter {
+                                it.timestamp >= "${yearMonth.year}$tempMonth${yearMonth.month.value}$tempDay${day}000000".toLong() && it.timestamp < "${yearMonth.year}$tempMonth${yearMonth.month.value}$tempDayEnd${(day) % daysInMonth + 1}000000".toLong()
                             }
-                            Log.d("1EventDayList - calender Screen", "${yearMonth.year}$tempMonth${yearMonth.month.value}$tempDay${day}000000".toLong().toString())
-                            Log.d("2EventDayList - calender Screen", "${yearMonth.year}$tempMonth${yearMonth.month.value}$tempDayEnd${(day)%(daysInMonth)+1}000000".toLong().toString())
-                            Log.d("xEventDayList X - calender Screen", eventDayList.toString())
-                            Log.d("xEventDayList allEvents - calender Screen", allEvents.toString())
 
                             Box(
                                 modifier = Modifier
@@ -134,8 +138,8 @@ fun CalendarMonthView(
                                     .clip(CircleShape)
                                     .background(if (isToday) Color.Blue else Color.Transparent)
                                     .clickable {
-                                        calenderScreenVM.setEventsListScreenEvents(eventDayList)
-                                        mainScreenVM.onEventListScreenAppear()
+                                        calenderScreenVM.setEventsListScreenEvents(flow { emit(eventDayList) })
+                                        mainScreenVM.onStartEdit()
                                     },
                                 contentAlignment = Alignment.Center,
                             ) {
@@ -163,15 +167,6 @@ fun CalendarMonthView(
                     }
                 }
             }
-            Column(
-                Modifier.fillMaxSize().padding(top = 30.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Total events overall : ${events.size}")
-                Text("Total events this month : ${allEvents.size}")
-            }
-
         }
 
     }

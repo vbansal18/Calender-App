@@ -19,15 +19,15 @@ class MainScreenVM  : ViewModel() {
     }
 
 
-    var isEventListScreenAppear by mutableStateOf(false)
+    var isEditGoingOn by mutableStateOf(false)
         private set
 
-    fun onEventListScreenAppear() {
-        isEventListScreenAppear = true
+    fun onStartEdit() {
+        isEditGoingOn = true
     }
 
-    fun onEventListScreenDisappear() {
-        isEventListScreenAppear = false
+    fun onStopEdit() {
+        isEditGoingOn = false
     }
 
 

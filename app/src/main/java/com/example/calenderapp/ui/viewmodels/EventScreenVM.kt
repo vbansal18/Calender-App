@@ -1,5 +1,6 @@
 package com.example.calenderapp.ui.viewmodels
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -36,17 +37,23 @@ class EventScreenVM  : ViewModel() {
 
     fun onTitleChange(title : String) {
          title_.value = title
-
+        Log.d("Change: title", title_.value)
     }
     fun onDescChange(desc : String) {
         desc_.value = desc
+        Log.d("Change: desc", desc_.value)
+
     }
     fun onTimestampChange(timestamp_ : Long) {
         timestamp.value = timestamp_
         date = timestamp.value.toString()
+        Log.d("Change: timestamp", "${timestamp.value}")
+
     }
     fun onCategoryChange(color : ColorCategories) {
         category = color
+        Log.d("Change: category", category.name)
+
     }
 
     fun resetCurrentEvent() {

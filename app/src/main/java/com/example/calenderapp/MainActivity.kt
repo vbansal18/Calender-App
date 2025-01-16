@@ -35,6 +35,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     floatingActionButton = {
                         FloatingActionButton(onClick = {
+                            mainScreenVM.onStopEdit()
                             mainScreenVM.onEventScreenAppear()
                         }) {
                             Icon(imageVector = Icons.Default.Add, contentDescription = "add")
@@ -42,7 +43,7 @@ class MainActivity : ComponentActivity() {
                     },
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding->
-                    if(!mainScreenVM.isEventListScreenAppear){
+                    if(!mainScreenVM.isEditGoingOn){
                         CalendarView(
                             modifier = Modifier.padding(innerPadding),
                             mainScreenVM = mainScreenVM,
@@ -50,7 +51,7 @@ class MainActivity : ComponentActivity() {
                             calenderScreenVM = calenderScreenVM,
                         )
                     }
-                    else if (mainScreenVM.isEventListScreenAppear){
+                    else if (mainScreenVM.isEditGoingOn){
                         EventsListScreen(
                             mainScreenVM = mainScreenVM,
                             eventScreenVM= eventScreenVM,
